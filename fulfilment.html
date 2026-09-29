@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fulfilment</title>
+<style>
+  :root {
+    --bg: #F4F5FA; --surface: #FFFFFF; --border: #E4E6EE;
+    --text: #1A1D29; --text-2: #6B7085; --text-3: #9297AA;
+    --sidebar-active: #EFF1FE;
+    --purple: #6C5DD3; --purple-light: #D9D4F7; --purple-mid: #9B8AEB;
+    --orange: #F5A76C; --orange-text: #B15B15; --orange-bg: #FDF0E4;
+    --blue: #4E7FE0; --blue-text: #1E4FA8; --blue-bg: #EAF0FC;
+    --green: #3CA96A; --green-text: #1E7A45; --green-bg: #E7F6ED;
+    --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14151C; --surface: #1D1F29; --border: #2E313D;
+      --text: #EDEEF3; --text-2: #A5A9BB; --text-3: #767B90;
+      --sidebar-active: #2A2C46;
+      --purple-light: #3A3568; --purple-mid: #7A6BD6;
+      --orange-bg: #3A2C1E; --orange-text: #F0B27E;
+      --blue-bg: #1C2B47; --blue-text: #8FB3EE;
+      --green-bg: #1C3324; --green-text: #7ED2A0;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text); }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: var(--surface); border-bottom: 0.5px solid var(--border); }
+  .brand-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--purple); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--purple); }
+  .company-name { font-size: 18px; font-weight: 600; margin: 0 auto 0 16px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-2); cursor: pointer; }
+  .icon-btn:hover { background: var(--bg); }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; background: var(--surface); border-right: 0.5px solid var(--border); padding: 16px 12px; flex-shrink: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); color: var(--text-2); font-size: 14px; cursor: pointer; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--bg); }
+  .nav-item.active { background: var(--sidebar-active); color: var(--purple); font-weight: 600; }
+  .main { flex: 1; padding: 28px 32px; min-width: 0; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .page-header h1 { font-size: 30px; font-weight: 700; margin: 0; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .btn { border: 0.5px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--bg); }
+  .view-toggle { display: flex; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .view-toggle button { border: none; background: var(--surface); color: var(--text-2); font-size: 13px; font-weight: 600; padding: 8px 16px; cursor: pointer; }
+  .view-toggle button.active { background: var(--purple); color: #fff; }
+  .new-badge { font-size: 10px; background: var(--purple); color: #fff; padding: 1px 6px; border-radius: 10px; margin-left: 6px; vertical-align: 2px; }
+  .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+  .metric-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; }
+  .metric-top { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; margin-bottom: 10px; }
+  .metric-value { font-size: 26px; font-weight: 700; }
+  .metric-sub { font-size: 12px; color: var(--green-text); margin-left: 6px; }
+  .metric-foot { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+  .chart-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 18px; }
+  .chart-row { display: flex; align-items: flex-end; gap: 6px; height: 170px; position: relative; }
+  .bar-col { flex: 1; display: flex; flex-direction: column-reverse; align-items: center; height: 100%; cursor: pointer; border-radius: 4px 4px 0 0; overflow: hidden; }
+  .bar-seg { width: 100%; }
+  .chart-labels { display: flex; gap: 6px; margin-top: 6px; }
+  .chart-labels span { flex: 1; text-align: center; font-size: 11px; color: var(--text-3); }
+  .chart-legend { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--text-2); margin-top: 14px; flex-wrap: wrap; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+  .tooltip { position: absolute; background: var(--text); color: var(--bg); font-size: 12px; padding: 8px 10px; border-radius: 6px; pointer-events: none; white-space: nowrap; z-index: 20; display: none; }
+  .tabs { display: flex; gap: 22px; border-bottom: 0.5px solid var(--border); margin-bottom: 16px; }
+  .tab { padding: 8px 2px 12px; font-size: 14px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; display: flex; gap: 6px; align-items: center; }
+  .tab .count { background: var(--bg); color: var(--text-2); font-size: 12px; padding: 1px 7px; border-radius: 10px; }
+  .tab.active { color: var(--purple); border-color: var(--purple); font-weight: 600; }
+  .tab.active .count { background: var(--purple-light); color: var(--purple); }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .search-box { flex: 1; min-width: 180px; max-width: 260px; display: flex; align-items: center; gap: 6px; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 12px; background: var(--surface); color: var(--text-3); font-size: 13px; }
+  .chip { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 7px 10px; font-size: 12px; color: var(--text-2); cursor: default; }
+  .chip svg { cursor: pointer; }
+  .alert-banner { margin-left: auto; background: var(--orange-bg); color: var(--orange-text); font-size: 13px; padding: 8px 14px; border-radius: var(--radius); display: flex; align-items: center; gap: 10px; }
+  .alert-banner a { color: var(--orange-text); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .group-header { background: var(--bg); font-weight: 600; padding: 10px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: var(--radius); margin-top: 10px; }
+  thead th { text-align: left; color: var(--text-2); font-weight: 600; font-size: 12px; padding: 10px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+  tbody tr.order-row { border-bottom: 0.5px solid var(--border); }
+  tbody tr.order-row:hover { background: var(--bg); }
+  tbody td { padding: 12px 10px; vertical-align: middle; }
+  .chevron { cursor: pointer; color: var(--text-3); display: inline-flex; transition: transform 0.15s; }
+  .chevron.open { transform: rotate(180deg); }
+  .type-icon { color: var(--text-3); margin-right: 4px; vertical-align: -3px; }
+  .pill { display: inline-flex; align-items: center; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; border: 1px solid; white-space: nowrap; }
+  .pill.orange { color: var(--orange-text); border-color: var(--orange); background: var(--orange-bg); }
+  .pill.blue { color: var(--blue-text); border-color: var(--blue); background: var(--blue-bg); }
+  .pill.green { color: var(--green-text); border-color: var(--green); background: var(--green-bg); }
+  .pill.gray { color: var(--text-2); border-color: var(--border); background: var(--bg); }
+  .driver-cell { display: flex; align-items: center; gap: 6px; }
+  .workload { font-size: 11px; background: var(--purple-light); color: var(--purple); padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .pod-btn { display: inline-flex; align-items: center; gap: 4px; color: var(--purple); font-size: 12px; font-weight: 600; cursor: pointer; border: 0.5px solid var(--purple); border-radius: var(--radius); padding: 4px 8px; background: var(--purple-light); }
+  .item-detail { background: var(--bg); }
+  .item-detail table { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+  .item-detail thead th { background: var(--bg); }
+  .checkbox { width: 18px; height: 18px; accent-color: var(--purple); cursor: pointer; }
+  .action-btn { width: 30px; height: 30px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--purple); }
+  .map-wrap { position: relative; background: #E3EEE3; border-radius: 12px; height: 460px; overflow: hidden; border: 0.5px solid var(--border); }
+  @media (prefers-color-scheme: dark) { .map-wrap { background: #1B2A22; } }
+  .map-road { position: absolute; background: rgba(255,255,255,0.55); }
+  @media (prefers-color-scheme: dark) { .map-road { background: rgba(255,255,255,0.08); } }
+  .pin { position: absolute; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transform: translate(-50%, -100%); box-shadow: 0 1px 4px rgba(0,0,0,0.3); border: 2px solid #fff; }
+  .pin:after { content: ""; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid currentColor; }
+  .map-legend { position: absolute; bottom: 14px; left: 14px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 12px; color: var(--text-2); display: flex; gap: 14px; }
+  .map-popup { position: absolute; width: 220px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); padding: 12px; font-size: 12px; z-index: 30; }
+  .map-popup h4 { margin: 0 0 4px; font-size: 13px; }
+  .map-popup p { margin: 2px 0; color: var(--text-2); }
+  .map-popup .view-link { color: var(--purple); font-weight: 600; cursor: pointer; font-size: 12px; margin-top: 6px; display: inline-block; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--surface); border-radius: 12px; padding: 24px; width: 340px; }
+  .modal-box h3 { margin: 0 0 14px; font-size: 17px; }
+  .modal-box .sig { border: 1px dashed var(--border); border-radius: var(--radius); height: 90px; display: flex; align-items: center; justify-content: center; color: var(--text-3); margin-bottom: 14px; font-size: 12px; }
+  .modal-close { text-align: right; }
+  .modal-close button { border: none; background: var(--purple); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--radius); cursor: pointer; }
+  .modal-actions button:not(.btn) { border: none; background: var(--purple); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--radius); cursor: pointer; }
+  .hidden { display: none !important; }
+  .timeline-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 20px; }
+  .timeline-head { display: flex; margin-bottom: 6px; }
+  .timeline-head .label-col { width: 140px; flex-shrink: 0; }
+  .timeline-head .hour { flex: 1; font-size: 11px; color: var(--text-3); text-align: left; }
+  .timeline-row { display: flex; align-items: center; padding: 10px 0; border-top: 0.5px solid var(--border); }
+  .timeline-row:first-child { border-top: none; }
+  .driver-label { width: 140px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+  .driver-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--purple-light); color: var(--purple); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .driver-count { font-size: 11px; color: var(--text-3); font-weight: 400; }
+  .timeline-track { position: relative; flex: 1; height: 40px; background: var(--bg); border-radius: 6px; }
+  .timeline-grid { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border); }
+  .timeline-block { position: absolute; top: 5px; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; color: #fff; cursor: pointer; overflow: hidden; white-space: nowrap; }
+  .timeline-block.conflict { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #E24B4A; z-index: 2; }
+  .timeline-block.tight { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--orange); z-index: 1; }
+  .timeline-block.dragging { opacity: 0.4; }
+  .timeline-track.drop-target { background: var(--purple-light); }
+  .tight-flag { position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; border: 2px solid var(--surface); }
+  .conflict-flag { position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%; background: #E24B4A; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid var(--surface); }
+  .timeline-now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--purple); }
+  .timeline-now-label { position: absolute; top: -20px; font-size: 10px; color: var(--purple); font-weight: 600; transform: translateX(-50%); white-space: nowrap; }
+  .conflict-banner { display: flex; align-items: center; gap: 8px; background: var(--orange-bg); color: var(--orange-text); font-size: 13px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 14px; }
+  .perf-strip { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 12px 18px; margin-bottom: 18px; font-size: 13px; color: var(--text-2); }
+  .perf-label { font-weight: 600; color: var(--text); margin-right: 8px; }
+  .perf-item b { font-weight: 700; }
+  .perf-divider { width: 0.5px; height: 16px; background: var(--border); }
+  .driver-name-btn { cursor: pointer; text-decoration: underline; text-decoration-color: transparent; }
+  .driver-name-btn:hover { text-decoration-color: var(--purple); }
+  .route-sheet-list { max-height: 300px; overflow-y: auto; margin-bottom: 14px; }
+  .route-sheet-item { border-top: 0.5px solid var(--border); padding: 10px 0; font-size: 13px; }
+  .route-sheet-item:first-child { border-top: none; }
+  .route-sheet-item .rs-time { font-weight: 700; color: var(--purple); }
+  .route-sheet-item .rs-addr { color: var(--text-2); font-size: 12px; margin-top: 2px; }
+  .modal-box.wide { width: 380px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .zone-badge { font-size: 11px; color: var(--text-3); background: var(--bg); padding: 1px 7px; border-radius: 10px; margin-left: 6px; }
+  @media print {
+    body.printing-route .topbar, body.printing-route .sidebar, body.printing-route .page-header,
+    body.printing-route .metrics, body.printing-route .perf-strip, body.printing-route .chart-card,
+    body.printing-route .tabs, body.printing-route .toolbar, body.printing-route #listView,
+    body.printing-route #timelineView, body.printing-route #mapView, body.printing-route #podOverlay { display: none !important; }
+    body.printing-route .modal-overlay#driverOverlay { position: static; background: none; display: block; }
+    body.printing-route .modal-box { width: 100%; box-shadow: none; }
+    body.printing-route .modal-actions { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand-dot">365</div>
+  <span style="font-size:20px;color:#4E7FE0;">&#9711;</span>
+  <div style="width:28px;height:28px;border-radius:50%;background:#EEE;display:flex;align-items:center;justify-content:center;font-size:11px;">HS</div>
+  <div class="company-name">Hospitality Services</div>
+  <div class="icon-btn" title="Calendar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
+  <div class="icon-btn" title="Docs"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/></svg></div>
+  <div class="icon-btn" title="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1 1-1 1.7"/><path d="M12 17h.01"/></svg></div>
+  <div style="width:30px;height:30px;border-radius:50%;background:#D9D4F7;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#6C5DD3;">MM</div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Customer</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Order</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Quote</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Production</div>
+    <div class="nav-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7"/><circle cx="6" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>Fulfilment</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M9 13h6M9 17h6"/></svg>Invoice</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>Menu</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Reports</div>
+    <div class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Setup</div>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Fulfilment</h1>
+      <div class="header-actions">
+        <div class="view-toggle">
+          <button id="btnList" class="active">List</button>
+          <button id="btnTimeline">Timeline<span class="new-badge">new</span></button>
+          <button id="btnMap">Map<span class="new-badge">new</span></button>
+        </div>
+        <button class="btn">Download report <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric-card"><div class="metric-top">Total time slots</div><div class="metric-value">16<span class="metric-sub">1.2%</span></div><div class="metric-foot">For today</div></div>
+      <div class="metric-card"><div class="metric-top">Deliveries</div><div class="metric-value">12<span class="metric-sub">60%</span></div><div class="metric-foot">For today</div></div>
+      <div class="metric-card"><div class="metric-top">Pick-ups</div><div class="metric-value">8<span class="metric-sub">40%</span></div><div class="metric-foot">For today</div></div>
+      <div class="metric-card"><div class="metric-top">Out for delivery</div><div class="metric-value">9<span class="metric-sub">75%</span></div><div class="metric-foot">For today</div></div>
+      <div class="metric-card"><div class="metric-top">Delivered / picked</div><div class="metric-value">18<span class="metric-sub">90%</span></div><div class="metric-foot">For today</div></div>
+    </div>
+
+    <div class="perf-strip">
+      <span class="perf-label">Today's performance <span class="new-badge">new</span></span>
+      <span class="perf-item"><b style="color:var(--green-text);">92%</b> on time</span>
+      <span class="perf-divider"></span>
+      <span class="perf-item"><b style="color:var(--orange-text);">1</b> overdue</span>
+      <span class="perf-divider"></span>
+      <span class="perf-item"><b>34 min</b> avg fulfilment time</span>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-row" id="chartRow"></div>
+      <div class="chart-labels" id="chartLabels"></div>
+      <div class="chart-legend">
+        <span><span class="legend-dot" style="background:var(--purple-light)"></span>Scheduled</span>
+        <span><span class="legend-dot" style="background:var(--orange)"></span>Out for delivery</span>
+        <span><span class="legend-dot" style="background:var(--purple-mid)"></span>Delivered / pick up</span>
+        <span><span class="legend-dot" style="background:var(--purple)"></span>Ready for fulfilment</span>
+      </div>
+      <div class="tooltip" id="chartTooltip"></div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="toolbar">
+      <div class="search-box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Search</div>
+      <div class="chip">Filter <span style="background:var(--purple-light);color:var(--purple);border-radius:8px;padding:0 5px;">1</span></div>
+      <select id="zoneFilter" class="btn" style="cursor:pointer;">
+        <option value="all">All zones</option>
+        <option value="Downtown">Downtown</option>
+        <option value="Westside">Westside</option>
+        <option value="Portland">Portland</option>
+        <option value="Uptown">Uptown</option>
+      </select>
+      <div class="chip">Period: Today</div>
+      <div class="chip">Type: Delivery</div>
+      <div class="btn">Bulk actions <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="alert-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>2 slots require attention <a id="viewAttention">View</a></div>
+    </div>
+
+    <div id="listView"></div>
+
+    <div id="timelineView" class="hidden">
+      <div class="timeline-card">
+        <div class="timeline-head" id="timelineHead"></div>
+        <div id="timelineRows"></div>
+      </div>
+    </div>
+
+    <div id="mapView" class="hidden">
+      <div class="map-wrap" id="mapWrap">
+        <div class="map-legend">
+          <span><span class="legend-dot" style="background:var(--orange)"></span>Out for delivery</span>
+          <span><span class="legend-dot" style="background:var(--blue)"></span>Ready</span>
+          <span><span class="legend-dot" style="background:var(--green)"></span>Delivered / picked</span>
+          <span><span class="legend-dot" style="background:var(--text-3)"></span>Scheduled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="podOverlay">
+  <div class="modal-box">
+    <h3>Proof of delivery</h3>
+    <div class="sig" id="podSigArea">Signature captured</div>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 4px;" id="podOrderLine">Order</p>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 4px;" id="podDriverLine">Driver</p>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 14px;" id="podTimeLine">Delivered at</p>
+    <div class="modal-close"><button id="podClose">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="driverOverlay">
+  <div class="modal-box wide">
+    <h3 id="driverModalTitle">Driver's day</h3>
+    <div class="route-sheet-list" id="driverRouteList"></div>
+    <div class="modal-actions">
+      <button class="btn" id="driverPrint">Print route sheet</button>
+      <button id="driverClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPE_ICON = {
+  delivery: '<svg class="type-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="13" height="9"/><path d="M14 10h4l3 3v3h-7"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>',
+  pickup: '<svg class="type-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8V6a3 3 0 0 1 6 0v2"/><rect x="3" y="8" width="18" height="13" rx="2"/></svg>'
+};
+const STATUS = {
+  scheduled: { label: 'Scheduled', pill: 'gray', pin: 'var(--text-3)' },
+  ready: { label: 'Ready for del.', pill: 'blue', pin: 'var(--blue)' },
+  out: { label: 'Out for delivery', pill: 'orange', pin: 'var(--orange)' },
+  picked: { label: 'Picked up', pill: 'green', pin: 'var(--green)' },
+  delivered: { label: 'Delivered', pill: 'green', pin: 'var(--green)' }
+};
+const ORDERS = [
+  { id: 2423, slot: '12:00', type: 'delivery', status: 'out', customer: 'Toyota', contact: 'Kerri Frew', requested: '11/29 12:00', despatch: '11/29 12:30', address: 'Nashville, 26 Green street', building: 'Legislature Offices, Room 2', driver: 'John', load: 4, mapX: 22, mapY: 30, attention: true, zone: 'Downtown',
+    items: [['Classic boxed lunch','Sandwiches','Sandwich / Baguettes','Turkey club wraps',2],['Classic boxed lunch','Crisps','Crisps / Confectionery','Bag of bakers crisps',2]] },
+  { id: 2319, slot: '12:00', type: 'delivery', status: 'ready', customer: 'Procter and Gamble', contact: 'Gordon Ramsey', requested: '11/29 14:20', despatch: '11/29 14:50', address: '840, South Spring Street, LA', building: 'Building 3', driver: 'Ian', load: 2, mapX: 58, mapY: 45, zone: 'Westside',
+    items: [['Executive platter','Mains','Hot buffet','Chicken supreme',6],['Executive platter','Sides','Vegetables','Roasted seasonal veg',6]] },
+  { id: 2319, slot: '12:00', type: 'delivery', status: 'ready', customer: 'Procter and Gamble', contact: 'Gordon Ramsey', requested: '11/29 14:20', despatch: '11/29 14:50', address: '840, South Spring Street, LA', building: 'Building 3', driver: null, load: 0, mapX: 60, mapY: 48, attention: true, zone: 'Westside',
+    items: [['Executive platter','Drinks','Beverages','Sparkling water',6]] },
+  { id: 2505, slot: '13:00', type: 'pickup', status: 'picked', customer: 'Netflix', contact: 'Kerri Frew', requested: '11/29 13:05', despatch: '11/29 13:55', address: 'Portland, 100 S.W. Main St., Suite 1100', building: 'Building 1, Room 3', driver: 'Sam', load: 5, mapX: 40, mapY: 65, zone: 'Portland',
+    items: [['Classic boxed lunch','Sandwiches','Sandwich / Baguettes','Turkey club wraps',2]] },
+  { id: 2506, slot: '13:00', type: 'delivery', status: 'delivered', customer: 'Shell', contact: 'Gordon Ramsey', requested: '11/29 13:05', despatch: '11/29 13:55', address: 'Portland, 100 S.W. Main St., Suite …', building: 'Building 4, Office 45', driver: 'John', load: 4, mapX: 75, mapY: 25, zone: 'Portland',
+    items: [['Classic boxed lunch','Sandwiches','Sandwich / Baguettes','Classic boxed lunch - turkey club wraps',2],['Classic boxed lunch','Crisps','Crisps / Confectionery','Bag of bakers crisps',2],['Classic boxed lunch','Cookies','Sandwich / Baguettes','Cookies',2],['Classic boxed lunch','Lunch deals','Sandwich / Baguettes','Soup of the day',2]] },
+  { id: 2611, slot: '14:00', type: 'delivery', status: 'scheduled', customer: 'Amazon', contact: 'Priya Shah', requested: '11/29 13:30', despatch: '11/29 14:00', address: '12 Riverside Way, Chicago', building: 'Tower B, Floor 9', driver: 'John', load: 0, mapX: 30, mapY: 78, zone: 'Uptown',
+    items: [['Working lunch','Sandwiches','Sandwich / Baguettes','Chicken caesar wrap',10]] },
+  { id: 2618, slot: '14:00', type: 'pickup', status: 'scheduled', customer: 'Meta', contact: 'Lena Ford', requested: '11/29 16:10', despatch: '11/29 16:30', address: '400 Lakeshore Dr, Chicago', building: 'Building 2, Reception', driver: 'Sam', load: 5, mapX: 85, mapY: 60, zone: 'Uptown',
+    items: [['Snack box','Sweet treats','Confectionery','Assorted cookies',8]] }
+];
+ORDERS.forEach((o, i) => { o.uid = i; });
+let currentTab = 'all';
+let currentZone = 'all';
+let expandedGroups = new Set(['12:00','13:00','14:00']);
+let expandedOrders = new Set();
+
+function renderCurrentView() {
+  if (!document.getElementById('timelineView').classList.contains('hidden')) renderTimeline();
+  else if (!document.getElementById('mapView').classList.contains('hidden')) renderMap();
+  else renderList();
+}
+
+function driverLoads() {
+  const m = {};
+  ORDERS.forEach(o => { if (o.driver) m[o.driver] = (m[o.driver]||0)+1; });
+  return m;
+}
+
+function buildTabs() {
+  const counts = { all: ORDERS.length, scheduled:0, ready:0, out:0, delivered:0 };
+  ORDERS.forEach(o => {
+    if (o.status === 'scheduled') counts.scheduled++;
+    if (o.status === 'ready') counts.ready++;
+    if (o.status === 'out') counts.out++;
+    if (o.status === 'picked' || o.status === 'delivered') counts.delivered++;
+  });
+  const defs = [['all','All'],['scheduled','Scheduled'],['ready','Ready'],['out','Out for delivery'],['delivered','Delivered']];
+  document.getElementById('tabs').innerHTML = defs.map(([k,l]) =>
+    '<div class="tab ' + (currentTab===k?'active':'') + '" data-tab="' + k + '">' + l + '<span class="count">' + counts[k] + '</span></div>'
+  ).join('');
+  document.querySelectorAll('.tab').forEach(el => el.addEventListener('click', () => { currentTab = el.dataset.tab; renderCurrentView(); }));
+}
+
+function filteredOrders() {
+  let list = ORDERS;
+  if (currentTab === 'delivered') list = list.filter(o => o.status === 'picked' || o.status === 'delivered');
+  else if (currentTab !== 'all') list = list.filter(o => o.status === currentTab);
+  if (currentZone !== 'all') list = list.filter(o => o.zone === currentZone);
+  return list;
+}
+
+function renderList() {
+  const loads = driverLoads();
+  const orders = filteredOrders();
+  const bySlot = {};
+  orders.forEach(o => { (bySlot[o.slot] = bySlot[o.slot] || []).push(o); });
+  let html = '';
+  Object.keys(bySlot).sort().forEach(slot => {
+    const open = expandedGroups.has(slot);
+    html += '<div class="group-header" data-slot="' + slot + '">' +
+      '<span class="chevron ' + (open?'open':'') + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>' +
+      slot + ' (' + bySlot[slot].length + ' time slots)</div>';
+    if (!open) return;
+    html += '<table><thead><tr><th></th><th>Order</th><th>Status</th><th>Customer</th><th>Contact</th><th>Requested</th><th>Despatch</th><th>Address</th><th>Building / room</th><th>Driver</th><th>Report</th><th>POD</th><th></th></tr></thead><tbody>';
+    bySlot[slot].forEach((o, idx) => {
+      const key = slot + '-' + idx + '-' + o.id;
+      const isOpen = expandedOrders.has(key);
+      const st = STATUS[o.status];
+      html += '<tr class="order-row">' +
+        '<td><span class="chevron ' + (isOpen?'open':'') + '" data-orderkey="' + key + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></td>' +
+        '<td>' + TYPE_ICON[o.type] + o.id + '</td>' +
+        '<td><span class="pill ' + st.pill + '">' + st.label + '</span></td>' +
+        '<td>' + o.customer + '</td>' +
+        '<td>' + o.contact + '</td>' +
+        '<td>' + o.requested + '</td>' +
+        '<td>' + o.despatch + '</td>' +
+        '<td>' + o.address + '<span class="zone-badge">' + o.zone + '</span></td>' +
+        '<td>' + o.building + '</td>' +
+        '<td><div class="driver-cell">' + (o.driver ? '<span class="driver-name-btn" data-driverclick="' + o.driver + '">' + o.driver + '</span><span class="workload">' + loads[o.driver] + '</span>' : '<span style="color:var(--text-3);font-size:12px;">Unassigned</span>') + '</div></td>' +
+        '<td><input type="checkbox" class="checkbox" checked></td>' +
+        '<td>' + ((o.status==='delivered'||o.status==='picked') ? '<span class="pod-btn" data-podorder="' + o.id + '" data-poddriver="' + (o.driver||'-') + '" data-podtime="' + o.despatch + '"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>View</span>' : '<span style="color:var(--text-3);font-size:12px;">&mdash;</span>') + '</td>' +
+        '<td><span class="action-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span></td>' +
+        '</tr>';
+      if (isOpen) {
+        html += '<tr class="item-detail"><td colspan="13" style="padding:12px 30px;">' +
+          '<table><thead><tr><th>Menu</th><th>Section</th><th>Item type</th><th>Stock item</th><th>Qty</th></tr></thead><tbody>' +
+          o.items.map(r => '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td></tr>').join('') +
+          '</tbody></table></td></tr>';
+      }
+    });
+    html += '</tbody></table>';
+  });
+  document.getElementById('listView').innerHTML = html;
+
+  document.querySelectorAll('[data-slot]').forEach(el => el.addEventListener('click', () => {
+    const s = el.dataset.slot;
+    if (expandedGroups.has(s)) expandedGroups.delete(s); else expandedGroups.add(s);
+    renderList();
+  }));
+  document.querySelectorAll('[data-orderkey]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const k = el.dataset.orderkey;
+    if (expandedOrders.has(k)) expandedOrders.delete(k); else expandedOrders.add(k);
+    renderList();
+  }));
+  document.querySelectorAll('[data-podorder]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openPod(el.dataset.podorder, el.dataset.poddriver, el.dataset.podtime);
+  }));
+  document.querySelectorAll('[data-driverclick]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openDriverModal(el.dataset.driverclick);
+  }));
+}
+
+function openDriverModal(driverName) {
+  const orders = ORDERS.filter(o => o.driver === driverName).sort((a,b) => timeToMinutes(a.requested) - timeToMinutes(b.requested));
+  document.getElementById('driverModalTitle').textContent = driverName + '\u2019s route \u2014 today';
+  document.getElementById('driverRouteList').innerHTML = orders.map(o => {
+    const itemCount = o.items.reduce((s,r) => s + r[4], 0);
+    return '<div class="route-sheet-item"><span class="rs-time">' + o.requested.split(' ')[1] + ' \u2013 ' + o.despatch.split(' ')[1] + '</span> &middot; #' + o.id + ' ' + o.customer +
+      '<div class="rs-addr">' + o.address + ' &middot; ' + o.building + ' &middot; ' + itemCount + ' items</div></div>';
+  }).join('') || '<p style="color:var(--text-3);font-size:13px;">No orders assigned today.</p>';
+  document.getElementById('driverOverlay').classList.add('open');
+}
+document.getElementById('driverClose').addEventListener('click', () => document.getElementById('driverOverlay').classList.remove('open'));
+document.getElementById('driverOverlay').addEventListener('click', (e) => { if (e.target.id === 'driverOverlay') e.currentTarget.classList.remove('open'); });
+document.getElementById('driverPrint').addEventListener('click', () => {
+  document.body.classList.add('printing-route');
+  window.print();
+  setTimeout(() => document.body.classList.remove('printing-route'), 300);
+});
+
+function openPod(orderId, driver, time) {
+  document.getElementById('podOrderLine').textContent = 'Order #' + orderId;
+  document.getElementById('podDriverLine').textContent = 'Driver: ' + driver;
+  document.getElementById('podTimeLine').textContent = 'Delivered at: ' + time;
+  document.getElementById('podOverlay').classList.add('open');
+}
+document.getElementById('podClose').addEventListener('click', () => document.getElementById('podOverlay').classList.remove('open'));
+document.getElementById('podOverlay').addEventListener('click', (e) => { if (e.target.id === 'podOverlay') e.currentTarget.classList.remove('open'); });
+
+function renderMap() {
+  const wrap = document.getElementById('mapWrap');
+  document.querySelectorAll('.pin, .map-popup, .map-road').forEach(el => el.remove());
+  const roads = [[10,'10%','100%','2px'],[35,'0','100%','2px'],[62,'0','100%','2px'],[0,'0','100%','2px']];
+  [15,42,70,88].forEach(top => { const r=document.createElement('div'); r.className='map-road'; r.style.top=top+'%'; r.style.left='0'; r.style.width='100%'; r.style.height='2px'; wrap.appendChild(r); });
+  [18,48,78].forEach(left => { const r=document.createElement('div'); r.className='map-road'; r.style.left=left+'%'; r.style.top='0'; r.style.height='100%'; r.style.width='2px'; wrap.appendChild(r); });
+
+  filteredOrders().forEach(o => {
+    const st = STATUS[o.status];
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.style.left = o.mapX + '%';
+    pin.style.top = o.mapY + '%';
+    pin.style.background = st.pin;
+    pin.style.color = st.pin;
+    pin.innerHTML = '<span style="transform:translateY(-2px);">' + (o.type==='delivery' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="1" y="7" width="13" height="9"/><path d="M14 10h4l3 3v3h-7"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 8V6a3 3 0 0 1 6 0v2"/><rect x="3" y="8" width="18" height="13" rx="2"/></svg>') + '</span>';
+    pin.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.map-popup').forEach(p => p.remove());
+      const pop = document.createElement('div');
+      pop.className = 'map-popup';
+      pop.style.left = Math.min(o.mapX, 68) + '%';
+      pop.style.top = Math.max(o.mapY - 26, 2) + '%';
+      pop.innerHTML = '<h4>Order #' + o.id + '</h4><p>' + o.customer + ' &middot; ' + st.label + '</p><p>' + o.address + '</p><p>Driver: ' + (o.driver || 'Unassigned') + '</p><span class="view-link" data-goto="' + o.slot + '|' + o.id + '">View in list</span>';
+      wrap.appendChild(pop);
+      pop.querySelector('.view-link').addEventListener('click', () => {
+        const [slot, id] = pop.querySelector('.view-link').dataset.goto.split('|');
+        expandedGroups.add(slot);
+        showList();
+        setTimeout(() => { const row = document.querySelector('[data-orderkey^="'+slot+'"]'); if (row) row.scrollIntoView({behavior:'smooth', block:'center'}); }, 50);
+      });
+    });
+    wrap.appendChild(pin);
+  });
+}
+
+function showList() {
+  document.getElementById('listView').classList.remove('hidden');
+  document.getElementById('timelineView').classList.add('hidden');
+  document.getElementById('mapView').classList.add('hidden');
+  document.getElementById('btnList').classList.add('active');
+  document.getElementById('btnTimeline').classList.remove('active');
+  document.getElementById('btnMap').classList.remove('active');
+  renderList();
+}
+function showMap() {
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('timelineView').classList.add('hidden');
+  document.getElementById('mapView').classList.remove('hidden');
+  document.getElementById('btnList').classList.remove('active');
+  document.getElementById('btnTimeline').classList.remove('active');
+  document.getElementById('btnMap').classList.add('active');
+  renderMap();
+}
+function showTimeline() {
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('timelineView').classList.remove('hidden');
+  document.getElementById('mapView').classList.add('hidden');
+  document.getElementById('btnList').classList.remove('active');
+  document.getElementById('btnTimeline').classList.add('active');
+  document.getElementById('btnMap').classList.remove('active');
+  renderTimeline();
+}
+document.getElementById('btnList').addEventListener('click', showList);
+document.getElementById('btnTimeline').addEventListener('click', showTimeline);
+document.getElementById('btnMap').addEventListener('click', showMap);
+
+function timeToMinutes(str) {
+  const hm = str.split(' ')[1];
+  const [h, m] = hm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function findConflicts(orders) {
+  const byDriver = {};
+  orders.forEach(o => { if (o.driver) (byDriver[o.driver] = byDriver[o.driver] || []).push(o); });
+  const conflictIds = new Set();
+  Object.values(byDriver).forEach(list => {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j];
+        const aStart = timeToMinutes(a.requested), aEnd = timeToMinutes(a.despatch);
+        const bStart = timeToMinutes(b.requested), bEnd = timeToMinutes(b.despatch);
+        if (aStart < bEnd && bStart < aEnd) { conflictIds.add(a.uid); conflictIds.add(b.uid); }
+      }
+    }
+  });
+  return conflictIds;
+}
+
+const TRAVEL_BUFFER_MIN = 25;
+function findTightPairs(orders, conflictIds) {
+  const byDriver = {};
+  orders.forEach(o => { if (o.driver) (byDriver[o.driver] = byDriver[o.driver] || []).push(o); });
+  const tightIds = new Set();
+  Object.values(byDriver).forEach(list => {
+    const sorted = list.slice().sort((a,b) => timeToMinutes(a.requested) - timeToMinutes(b.requested));
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const a = sorted[i], b = sorted[i+1];
+      if (conflictIds.has(a.uid) || conflictIds.has(b.uid)) continue;
+      const gap = timeToMinutes(b.requested) - timeToMinutes(a.despatch);
+      if (gap >= 0 && gap < TRAVEL_BUFFER_MIN && a.address !== b.address) { tightIds.add(a.uid); tightIds.add(b.uid); }
+    }
+  });
+  return tightIds;
+}
+
+function renderTimeline() {
+  const DAY_START = 8 * 60, DAY_END = 18 * 60, SPAN = DAY_END - DAY_START;
+  const orders = filteredOrders();
+  const conflicts = findConflicts(orders);
+  const tight = findTightPairs(orders, conflicts);
+  const drivers = Array.from(new Set(orders.filter(o => o.driver).map(o => o.driver)));
+  const unassigned = orders.filter(o => !o.driver);
+  const loads = driverLoads();
+
+  const conflictCount = new Set(Array.from(conflicts)).size ? new Set(orders.filter(o=>conflicts.has(o.uid)).map(o=>o.driver)).size : 0;
+  const tightCount = new Set(orders.filter(o=>tight.has(o.uid)).map(o=>o.driver)).size;
+  let bannerHtml = '';
+  if (conflictCount > 0 || tightCount > 0) {
+    const parts = [];
+    if (conflictCount > 0) parts.push(conflictCount + ' driver' + (conflictCount>1?'s':'') + ' double-booked');
+    if (tightCount > 0) parts.push(tightCount + ' driver' + (tightCount>1?'s':'') + ' with a tight turnaround');
+    bannerHtml = '<div class="conflict-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>' +
+      parts.join(' \u00b7 ') + ' \u2014 drag a block to another driver to fix it</div>';
+  }
+
+  const head = document.getElementById('timelineHead');
+  let hoursHtml = '<div class="label-col"></div>';
+  for (let h = 8; h <= 18; h += 2) hoursHtml += '<div class="hour">' + h + ':00</div>';
+  head.innerHTML = hoursHtml;
+
+  const nowMin = 13 * 60 + 30;
+  const nowPct = ((nowMin - DAY_START) / SPAN) * 100;
+
+  let rowsHtml = bannerHtml;
+  function blockFor(o) {
+    const start = timeToMinutes(o.requested), end = Math.max(timeToMinutes(o.despatch), start + 20);
+    const left = Math.max(((start - DAY_START) / SPAN) * 100, 0);
+    const width = Math.max(((end - start) / SPAN) * 100, 6);
+    const st = STATUS[o.status];
+    const isConflict = conflicts.has(o.uid);
+    const isTight = !isConflict && tight.has(o.uid);
+    return '<div class="timeline-block ' + (isConflict?'conflict':(isTight?'tight':'')) + '" style="left:' + left + '%;width:' + width + '%;background:' + st.pin + ';" draggable="true" data-uid="' + o.uid + '" data-tlslot="' + o.slot + '">' +
+      (isConflict ? '<span class="conflict-flag">!</span>' : (isTight ? '<span class="tight-flag">~</span>' : '')) + '#' + o.id + ' ' + o.customer + '</div>';
+  }
+
+  drivers.forEach(d => {
+    const dOrders = orders.filter(o => o.driver === d);
+    rowsHtml += '<div class="timeline-row"><div class="driver-label"><div class="driver-avatar">' + d.slice(0,2).toUpperCase() + '</div><span class="driver-name-btn" data-driverclick="' + d + '">' + d + '</span> <span class="driver-count">(' + loads[d] + ')</span></div>' +
+      '<div class="timeline-track" data-driver="' + d + '">' +
+      [10,12,14,16].map(h => '<div class="timeline-grid" style="left:' + (((h*60-DAY_START)/SPAN)*100) + '%;"></div>').join('') +
+      '<div class="timeline-now" style="left:' + nowPct + '%;"><span class="timeline-now-label">Now</span></div>' +
+      dOrders.map(blockFor).join('') +
+      '</div></div>';
+  });
+  rowsHtml += '<div class="timeline-row"><div class="driver-label"><div class="driver-avatar" style="background:var(--orange-bg);color:var(--orange-text);">?</div>Unassigned</div>' +
+    '<div class="timeline-track" data-driver="">' +
+    [10,12,14,16].map(h => '<div class="timeline-grid" style="left:' + (((h*60-DAY_START)/SPAN)*100) + '%;"></div>').join('') +
+    unassigned.map(blockFor).join('') +
+    '</div></div>';
+  document.getElementById('timelineRows').innerHTML = rowsHtml;
+
+  document.querySelectorAll('.timeline-block').forEach(el => {
+    el.addEventListener('click', () => {
+      const slot = el.dataset.tlslot;
+      expandedGroups.add(slot);
+      showList();
+      setTimeout(() => { const row = document.querySelector('[data-orderkey^="'+slot+'"]'); if (row) row.scrollIntoView({behavior:'smooth', block:'center'}); }, 50);
+    });
+    el.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', el.dataset.uid);
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  });
+  document.querySelectorAll('[data-driverclick]').forEach(el => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openDriverModal(el.dataset.driverclick);
+  }));
+  document.querySelectorAll('.timeline-track').forEach(track => {
+    track.addEventListener('dragover', (e) => { e.preventDefault(); track.classList.add('drop-target'); });
+    track.addEventListener('dragleave', () => track.classList.remove('drop-target'));
+    track.addEventListener('drop', (e) => {
+      e.preventDefault();
+      track.classList.remove('drop-target');
+      const uid = Number(e.dataTransfer.getData('text/plain'));
+      const newDriver = track.dataset.driver || null;
+      const order = ORDERS.find(o => o.uid === uid);
+      if (order) { order.driver = newDriver; }
+      renderTimeline();
+    });
+  });
+}
+
+document.getElementById('zoneFilter').addEventListener('change', (e) => { currentZone = e.target.value; renderCurrentView(); });
+document.getElementById('viewAttention').addEventListener('click', () => {
+  currentTab = 'all'; showList();
+  const first = document.querySelector('.order-row'); if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+});
+
+function renderChart() {
+  const hours = ['06:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+  const data = [
+    [60,0,0,20],[30,20,0,40],[40,0,0,0],[10,0,0,55],[10,0,0,15],[30,0,0,10],
+    [10,0,0,75],[20,0,0,30],[10,0,0,40],[15,25,0,25],[45,0,0,0],[10,15,0,0],
+    [30,0,0,0],[10,25,0,15]
+  ];
+  const row = document.getElementById('chartRow');
+  const labels = document.getElementById('chartLabels');
+  row.innerHTML = ''; labels.innerHTML = '';
+  const colors = ['var(--purple-light)','var(--orange)','var(--purple-mid)','var(--purple)'];
+  data.forEach((seg, i) => {
+    const total = seg.reduce((a,b)=>a+b,0);
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    seg.forEach((v, si) => {
+      if (v <= 0) return;
+      const s = document.createElement('div');
+      s.className = 'bar-seg';
+      s.style.height = Math.max((v/600)*170,2) + 'px';
+      s.style.background = colors[si];
+      col.appendChild(s);
+    });
+    col.addEventListener('mousemove', (e) => {
+      const tt = document.getElementById('chartTooltip');
+      tt.style.display = 'block';
+      tt.style.left = e.currentTarget.offsetLeft + 'px';
+      tt.style.top = '-10px';
+      tt.innerHTML = hours[i] + '<br>Scheduled ' + seg[0] + ' &middot; Out ' + seg[1] + ' &middot; Ready ' + seg[3];
+    });
+    col.addEventListener('mouseleave', () => { document.getElementById('chartTooltip').style.display = 'none'; });
+    row.appendChild(col);
+    const lab = document.createElement('span'); lab.textContent = hours[i]; labels.appendChild(lab);
+  });
+}
+
+buildTabs();
+renderChart();
+showList();
+</script>
+<script>document.querySelectorAll(".sidebar .nav-item").forEach(function(n){var t=n.textContent.trim(),u=t==="Production"?"/production/":(t==="Fulfilment"||t==="Delivery")?"/fulfilment/":null;if(u&&!n.classList.contains("active")){n.style.cursor="pointer";n.addEventListener("click",function(){location.href=u;});}});</script>
+</body>
+</html>
